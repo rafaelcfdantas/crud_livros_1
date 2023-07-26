@@ -56,7 +56,9 @@ criar um CRUD de livros utilizando Laravel e algumas API's para complementar inf
 
 ## Instalação
 
-1. Clone o repositório
+Utilize o Prompt de Comando para o Windows e o Terminal padrão para o Linux.
+
+1. Clone o repositório no destino de sua preferência.
    ```sh
    git clone https://github.com/rafaelcfdantas/crud_livros_1.git
    ```
@@ -68,6 +70,14 @@ criar um CRUD de livros utilizando Laravel e algumas API's para complementar inf
 4. Insira o comando abaixo para inicializar o Docker
    ```sh
    docker-compose up -d apache2 mysql
+   ```
+5. Entre no container do workspace
+   ```sh
+   docker-compose exec workspace bash
+   ```
+6. Instale as dependências do composer
+   ```sh
+   composer install
    ```
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
