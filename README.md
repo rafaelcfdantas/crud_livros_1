@@ -58,24 +58,27 @@ criar um CRUD de livros utilizando Laravel e algumas API's para complementar inf
 
 Utilize o Prompt de Comando para o Windows e o Terminal padrão para o Linux.
 
-1. Clone o repositório no destino de sua preferência.
+1. Clone o repositório no destino de sua preferência e entre na pasta do laradock
    ```sh
    git clone https://github.com/rafaelcfdantas/crud_livros_1.git
-   ```
-2. Entre na pasta do laradock
-   ```sh
    cd crud_livros_1/laradock_crud_livros_1
    ```
-3. Caso seu sistema operacional seja Linux, abra o arquivo .env e altere o valor da diretiva COMPOSE_PATH_SEPARATOR para " : " (sem as aspas)
-4. Insira o comando abaixo para inicializar o Docker
+2. Caso seu sistema operacional seja Linux, abra o arquivo .env e altere o valor 
+da diretiva COMPOSE_PATH_SEPARATOR para ``:``
+3. Inicialize o Docker e entre no container do Mysql
    ```sh
    docker-compose up -d apache2 mysql
+   docker-compose exec mysql bash
    ```
-5. Entre no container do workspace
+4. Execute o seguinte comando para criar o banco de dados. Se solicitar senha, utilize ``root``
+   ```sh
+   mysql -u root -p < /docker-entrypoint-initdb.d/createdb.sql
+   ```
+5. Saia do container do MySQL com o comando ``exit`` e entre no container do workspace
    ```sh
    docker-compose exec workspace bash
    ```
-6. Instale as dependências do composer
+6. Instale as dependências do composer e saia do container com o comando ``exit``
    ```sh
    composer install
    ```
