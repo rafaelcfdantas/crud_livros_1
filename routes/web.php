@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BooksController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -13,10 +14,10 @@ Route::get('/', [BooksController::class, 'get']);
  *
  * Se o método for GET, exibe a view. Se for POST, cria ou edita um livro
  */
-Route::match(['get', 'post'], '/book/{id?}', function (string $id = null) {
-    $method = $_SERVER['REQUEST_METHOD'] === 'GET' ? 'read' : 'post';
+Route::match(['get', 'post'], '/book/{id?}', function (Request $request, string $id = null) {
+    $method = $request->getMethod() === 'GET' ? 'read' : 'post';
 
-    return (new BooksController())->{$method}();
+    return (new BooksController($request))->{$method}($id);
 });
 
 /**

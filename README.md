@@ -39,6 +39,7 @@ criar um CRUD de livros utilizando Laravel e algumas API's para complementar inf
 
 * [![Laravel][Laravel.com]][Laravel-url]
 * [![Bootstrap][Bootstrap.com]][Bootstrap-url]
+* [![JQuery][JQuery.com]][JQuery-url]
 * [![Laradock][Laradock.com]][Laradock-url]
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
@@ -78,9 +79,11 @@ da diretiva COMPOSE_PATH_SEPARATOR para ``:``
    ```sh
    docker-compose exec workspace bash
    ```
-6. Instale as dependências do composer e saia do container com o comando ``exit``
+6. Instale as dependências do composer, execute as migrations e saia do container 
+com o comando ``exit``
    ```sh
    composer install
+   php artisan migrate
    ```
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
@@ -105,5 +108,7 @@ da diretiva COMPOSE_PATH_SEPARATOR para ``:``
 [Laravel-url]: https://laravel.com
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
 [Bootstrap-url]: https://getbootstrap.com
+[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
+[JQuery-url]: https://jquery.com
 [Laradock.com]: https://img.shields.io/badge/Laradock-7E57C2?style=for-the-badge&logo=docker&logoColor=white
 [Laradock-url]: https://laradock.io/
