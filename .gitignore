@@ -5,6 +5,7 @@
 /public/storage
 /storage/*.key
 /vendor
+composer.lock
 .env.backup
 .env.production
 .phpunit.result.cache

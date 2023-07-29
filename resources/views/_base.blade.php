@@ -36,6 +36,13 @@
         </header>
 
         <main class="container">
+            <hr class="mb-5">
+            <section id="alert-wrapper">
+                @isset($alert)
+                    <x-alert :type="$alert['type']" :message="$alert['message']"/>
+                @endisset
+            </section>
+
             @yield('content')
         </main>
 

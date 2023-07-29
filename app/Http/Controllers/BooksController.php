@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
-use Faker\Provider\Lorem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BooksController extends Controller
 {
@@ -25,8 +25,6 @@ class BooksController extends Controller
         $books = [];
 
         foreach (Book::all() as $book) {
-            // dd($book);
-
             $books[] = [
                 'id'              => $book['id'],
                 'titulo'          => $book['titulo'],
@@ -35,7 +33,6 @@ class BooksController extends Controller
             ];
         }
 
-        // dd($books);
         return view('list', ['books' => $books]);
     }
 
@@ -62,7 +59,16 @@ class BooksController extends Controller
             }
         }
 
-        return view('form', ['book' => $book]);
+        $data['book'] = $book;
+
+        if (request('insert')) {
+            $data['alert'] = [
+                'type'    => 'success',
+                'message' => 'Livro criado com sucesso!'
+            ];
+        }
+
+        return view('form', $data);
     }
 
     /**
@@ -84,16 +90,46 @@ class BooksController extends Controller
             $book = new Book();
         }
 
-        $book->isbn            = rand(0, 9999);
-        $book->titulo          = $request['titulo'];
-        $book->autor           = $request['autor'];
-        $book->data_publicacao = $request['data_publicacao'];
-        $book->cep             = $request['cep'];
-        $book->capa            = Lorem::words(1, true);
-        $book->descricao       = Lorem::words(10, true);
-        $book->save();
+        try {
+            $book->titulo = $request['titulo'];
+            $book->autor  = $request['autor'];
+            $book->cep    = $request['cep'];
 
-        return $book->wasRecentlyCreated ? redirect('/book/' . $book['id']) : view('form', ['book' => $book]);
+            if ($book->titulo != $request['titulo'] || $book->autor != $request['autor']) {
+                $book->setGoogleBooksAPIData($request);
+            }
+
+            if ($book->cep != $request['cep']) {
+                $book->setViaCepAPIData($request['cep']);
+            }
+
+            if ($this->request->hasFile('capa')) {
+                $file     = $this->request->file('capa');
+                $filename = $file->getClientOriginalName();
+                $file->storeAs('capas/', $filename, 's3');
+                $book->capa = $filename;
+
+                // Storage::disk('s3')->response('capas/' . $book->capa);
+            }
+
+            // $url = 'https://s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/' . env('AWS_BUCKET') . '/';
+            // $images = [];
+            // $files = Storage::disk('s3')->files('images');
+            // foreach ($files as $file) {
+            //     $images[] = [
+            //         'name' => str_replace('images/', '', $file),
+            //         'src'  => $url . $file
+            //     ];
+            // }
+
+            $book->save();
+
+            return $book->wasRecentlyCreated
+                ? redirect('/book/' . $book['id'] . '?insert=true')
+                : view('form', ['book' => $book, 'alert' => ['type' => 'success', 'message' => 'Livro atualizado com sucesso!']]);
+        } catch (\Exception $e) {
+            return view('form', ['book' => $book, 'alert' => ['type' => 'danger', 'message' => $e->getMessage()]]);
+        }
     }
 
     /**

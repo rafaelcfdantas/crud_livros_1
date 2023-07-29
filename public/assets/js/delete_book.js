@@ -14,6 +14,8 @@ function deleteBookEvent() {
                 openDialog('Erro interno no servidor! (1001)');
             },
             success: function (data) {
+                addAlert('success', 'O livro foi excluído com sucesso!');
+
                 deleteButton.closest('tr').remove();
 
                 if (!$('table tbody tr').length) {

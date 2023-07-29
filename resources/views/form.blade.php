@@ -14,14 +14,16 @@
     </div>
 
     <div class="mb-3">
-        <label for="data_publicacao" class="form-label">Data de publicação</label>
-        <input type="date" name="data_publicacao" value="{{ $book['data_publicacao'] }}" class="form-control" id="data_publicacao" min="1500-01-01" max="2029-12-31" required>
-    </div>
-
-    <div class="mb-3">
         <label for="cep" class="form-label">CEP do autor</label>
         <input type="text" name="cep" value="{{ $book['cep'] }}" class="form-control cep" id="cep" required>
     </div>
+
+    @isset($book['descricao'])
+    <div class="mb-3">
+        <label for="descricao" class="form-label">Descrição</label>
+        <textarea readonly class="form-control" id="descricao" rows="6">{{ $book['descricao'] }}</textarea>
+    </div>
+    @endisset
 
     <button type="submit" class="btn btn-primary">Salvar</button>
 </form>
