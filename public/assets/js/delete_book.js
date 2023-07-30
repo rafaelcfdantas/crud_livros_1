@@ -11,7 +11,7 @@ function deleteBookEvent() {
             dataType: "json",
             data: {'_token': $("meta[name='csrf-token']").attr("content")},
             error: function (data) {
-                openDialog('Erro interno no servidor! (1001)');
+                openModal('Parece que algo deu errado com a sua requisição. Tente novamente mais tarde!', 'Erro');
             },
             success: function (data) {
                 addAlert('success', 'O livro foi excluído com sucesso!');
@@ -19,7 +19,7 @@ function deleteBookEvent() {
                 deleteButton.closest('tr').remove();
 
                 if (!$('table tbody tr').length) {
-                    $('table tbody').html('<tr><td colSpan="5">Nenhum livro encontrado no banco de dados</td></tr>');
+                    $('table tbody').html('<tr><td colspan="6">Nenhum livro encontrado no banco de dados</td></tr>');
                 }
             },
             complete: function (data) {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Helpers\Api\{GoogleBooksAPI, ViaCepAPI};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
 
 class Book extends BaseModels
 {
@@ -14,9 +15,86 @@ class Book extends BaseModels
         'descricao', 'cep', 'rua', 'bairro', 'cidade', 'estado'
     ];
 
+    protected $attributes = ['capa' => ''];
+
     public $timestamps = false;
 
-    public function setGoogleBooksAPIData(array $request): void
+    /**
+     * Registra o evento 'deleting' para deletar a imagem na Amazon junto do registro do banco
+     *
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Book $book) {
+            return Storage::disk('s3')->delete('capas/' . $book->capa);
+        });
+    }
+
+    /**
+     * Chama as API's do GoogleBooks e ViaCEP
+     *
+     * @param array $request
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function callGoogleBooksAndViaCep(array $request): void
+    {
+        $this->googleBooksAPIHandler($request);
+        $this->viaCepAPIHandler($request['cep']);
+    }
+
+    /**
+     * Chama a API's da Amazon S3
+     *
+     * @param array $request
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function callAmazonS3(array $request): void
+    {
+        $this->s3ImageHandler($request);
+    }
+
+    /**
+     * Exclui a imagem antiga e cria uma nova na Amazon S3
+     *
+     * @param array $request
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function s3ImageHandler(array $request): void
+    {
+        if (isset($request['capa'])) {
+            if (!$request['capa']->isValid()) {
+                throw new \Exception('Erro ao processar a imagem da capa do livro.');
+            }
+
+            // Exclui a imagem antiga se existir
+            if (!empty($this->capa)) {
+                Storage::disk('s3')->delete('capas/' . $this->capa);
+            }
+
+            $file     = $request['capa'];
+            $filename = $this->id . '_' . $file->getClientOriginalName();
+            $file->storeAs('capas/', $filename, 's3');
+
+            $this->update(['capa' => $filename]);
+        }
+    }
+
+    /**
+     * Chama a API do GoogleBooks e popula os atributos complementares
+     *
+     * @param array $request
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function googleBooksAPIHandler(array $request): void
     {
         $googleBooksAPI = new GoogleBooksAPI([
             'intitle'  => $request['titulo'],
@@ -30,7 +108,15 @@ class Book extends BaseModels
         $this->data_publicacao = $response['publishedDate'];
     }
 
-    public function setViaCepAPIData(string $cep)
+    /**
+     * Chama a API do ViaCEP e popula os atributos complementares
+     *
+     * @param string $cep
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function viaCepAPIHandler(string $cep): void
     {
         $viaCepAPI = new ViaCepAPI($cep);
 

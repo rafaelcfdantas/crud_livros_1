@@ -1,28 +1,30 @@
 $(function () {
-    // prevent conflict of jQuery UI tooltip with Bootstrap tooltip
-    var bootstrapButton = $.fn.button.noConflict();
-    $.fn.bootstrapBtn = bootstrapButton;
 });
 
-function openDialog(msg, title = 'Atenção') {
-    if (typeof $('#dialog').dialog('instance') != 'undefined') {
-        $('#dialog').dialog('destroy');
-    }
-
-    $('#dialog').html(
-        '<p> ' + msg + '</p>'
+function openModal(msg, title = 'Atenção') {
+    $('body').append(
+        `<div class="modal fade" id="modal-default" tabindex="-1" aria-labelledby="modal-default-title" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modal-default-title">${title}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modal-default-msg">${msg}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>`
     );
 
-    $('#dialog').dialog({
-        modal: true,
-        title: title,
-        draggable: false,
-        resizable: false,
-        buttons: {
-            Ok: function() {
-                $(this).dialog('close');
-            }
-        }
+    $('#modal-default').modal('show');
+
+    $('#modal-default').on('hidden.bs.modal', function(){
+        $('#modal-default').remove();
     });
 }
 

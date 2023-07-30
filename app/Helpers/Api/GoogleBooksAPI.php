@@ -15,10 +15,15 @@ class GoogleBooksAPI
         $this->options = $options;
     }
 
+    /**
+     * Faz a requisição para o GoogleBooks para achar o livro
+     *
+     * @return array
+     * @throws \Exception
+     */
     public function getBook(): array
     {
-        $parameters = $this->parsedOptions();
-        $response   = Http::get($this->endpoint . $parameters);
+        $response = Http::get($this->endpoint . $this->getFormattedQueryString());
 
         if (!$response->successful()) {
             throw new \Exception('Erro ao fazer a requisição para a API do Google Books');
@@ -35,12 +40,17 @@ class GoogleBooksAPI
         return $json['items'][0]['volumeInfo'];
     }
 
-    private function parsedOptions(): string
+    /**
+     * Formata a QueryString
+     *
+     * @return string
+     */
+    private function getFormattedQueryString(): string
     {
         foreach ($this->options as $key => $option) {
-            $temporaryArray[] = $key . ':"' . $option . '"';
+            $parts[] = $key . ':"' . $option . '"';
         }
 
-        return '?q=' . implode('+', $temporaryArray) . '&key=' . $this->apiKey;
+        return '?q=' . implode('+', $parts) . '&key=' . $this->apiKey;
     }
 }

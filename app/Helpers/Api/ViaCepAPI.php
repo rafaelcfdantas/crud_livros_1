@@ -15,6 +15,12 @@ class ViaCepAPI
         $this->cep = $cep;
     }
 
+    /**
+     * Faz a requisição para o ViaCEP para achar o cep
+     *
+     * @return array
+     * @throws \Exception
+     */
     public function getCep(): array
     {
         $response = Http::get($this->endpoint . $this->cep . '/json/');
