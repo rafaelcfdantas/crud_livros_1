@@ -16,7 +16,7 @@
         @forelse ($books as $book)
             <tr>
                 <td>{{ $book['id'] }}</td>
-                <td><img src="{{ $book['capa'] }}" class="img-thumbnail mx-auto d-block" alt="{{ $book['capa'] }}"></td>
+                <td>@if(!empty($book['capa']))<img src="{{ $book['capa'] }}" class="img-thumbnail mx-auto d-block" alt="{{ $book['capa'] }}">@endif</td>
                 <td>{{ $book['titulo'] }}</td>
                 <td>{{ $book['autor'] }}</td>
                 <td>{{ $book['data_publicacao']->format('d/m/Y') }}</td>

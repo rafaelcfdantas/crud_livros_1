@@ -22,7 +22,7 @@
                 <img src="{{ $book['capa'] }}" class="img-thumbnail" alt="{{ $book['capa'] }}">
             </div>
         @endif
-        <input type="file" name="capa" class="form-control" id="capa" accept="image/*" @unless($book['id']) required @endunless>
+        <input type="file" name="capa" class="form-control" id="capa" accept="image/*" @unless($book['capa']) required @endunless>
     </div>
 
     <div class="mb-3">

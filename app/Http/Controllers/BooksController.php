@@ -4,15 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 class BooksController extends Controller
 {
     private Request $request;
+    public string   $s3Endpoint;
 
     public function __construct(Request $request)
     {
-        $this->request = $request;
+        $this->request    = $request;
+        $this->s3Endpoint = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/capas/';
     }
 
     /**
@@ -33,7 +35,7 @@ class BooksController extends Controller
                 'titulo'          => $book['titulo'],
                 'autor'           => $book['autor'],
                 'data_publicacao' => new \DateTime($book['data_publicacao']),
-                'capa' => 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/capas/' . $book['capa'],
+                'capa'            => empty($book['capa']) ? '' : $this->s3Endpoint . $book['capa'],
             ];
         }
 
@@ -48,17 +50,14 @@ class BooksController extends Controller
      * @param $id
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     public function read($id = null)
     {
-        try {
-            $data['book'] = $this->validateId($id);
+        $data['book'] = $this->validateId($id);
 
-            if (!empty($data['book']['capa'])) {
-                $data['book']['capa'] = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/capas/' . $data['book']['capa'];
-            }
-        } catch (HttpException $e) {
-            return redirect('/');
+        if (!empty($data['book']['capa'])) {
+            $data['book']['capa'] = $this->s3Endpoint . $data['book']['capa'];
         }
 
         if (request('insert')) {
@@ -79,18 +78,17 @@ class BooksController extends Controller
      * @param $id
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     public function post($id = null)
     {
-        $request = $this->request->all();
+        $request      = $this->request->all();
+        $book         = $this->validateId($id);
+        $book->titulo = $request['titulo'];
+        $book->autor  = $request['autor'];
+        $book->cep    = $request['cep'];
 
         try {
-            $book = $this->validateId($id);
-
-            $book->titulo = $request['titulo'];
-            $book->autor  = $request['autor'];
-            $book->cep    = $request['cep'];
-
             /*
              * Chama as apis do GoogleBooks e ViaCEP somente na criação do livro ou
              * se alterar o valor de algum dado para poupar processamento
@@ -105,11 +103,11 @@ class BooksController extends Controller
                 $book->callAmazonS3($request);
             }
 
+            $book->capa = $this->s3Endpoint . $book->capa;
+
             return $book->wasRecentlyCreated
                 ? redirect('/book/' . $book['id'] . '?insert=true')
                 : view('form', ['book' => $book, 'alert' => ['type' => 'success', 'message' => 'Livro atualizado com sucesso!']]);
-        } catch (HttpException $e) {
-            return redirect('/');
         } catch (\Exception $e) {
             return view('form', ['book' => $book, 'alert' => ['type' => 'danger', 'message' => $e->getMessage()]]);
         }
@@ -152,11 +150,33 @@ class BooksController extends Controller
         $book = Book::find($id);
 
         if (!$book) {
-            abort_if(isset($id), 302, 'Livro não encontrado');
+            abort_if(isset($id), Response::HTTP_NOT_FOUND, 'Livro não encontrado');
 
             $book = new Book();
         }
 
         return $book;
+    }
+
+    /**
+     * "GET example.com/api/books/{isbn}"
+     *
+     * Busca um livro pelo código ISBN, e se não achar cria um consultando no GoogleBooks
+     *
+     * @param $isbn
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiGet($isbn)
+    {
+        if ($book = Book::where('isbn', $isbn)->first()) {
+            return response()->json($book);
+        }
+
+        try {
+            return response()->json(Book::createFromGoogleBooks($isbn), Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return response()->json(['error' => true, 'message' => $e->getMessage()], Response::HTTP_NOT_FOUND);
+        }
     }
 }

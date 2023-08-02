@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('data_publicacao');
             $table->string('capa');
             $table->text('descricao');
-            $table->string('cep');
+            $table->string('cep')->nullable();
             $table->string('rua')->nullable();
             $table->string('bairro')->nullable();
             $table->string('cidade')->nullable();

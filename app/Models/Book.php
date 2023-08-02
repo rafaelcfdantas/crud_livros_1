@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Helpers\Api\{GoogleBooksAPI, ViaCepAPI};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class Book extends BaseModels
 {
@@ -37,7 +38,7 @@ class Book extends BaseModels
      * @param array $request
      *
      * @return void
-     * @throws \Exception
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     public function callGoogleBooksAndViaCep(array $request): void
     {
@@ -51,7 +52,7 @@ class Book extends BaseModels
      * @param array $request
      *
      * @return void
-     * @throws \Exception
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     public function callAmazonS3(array $request): void
     {
@@ -64,13 +65,13 @@ class Book extends BaseModels
      * @param array $request
      *
      * @return void
-     * @throws \Exception
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     private function s3ImageHandler(array $request): void
     {
         if (isset($request['capa'])) {
             if (!$request['capa']->isValid()) {
-                throw new \Exception('Erro ao processar a imagem da capa do livro.');
+                abort(Response::HTTP_BAD_REQUEST, 'Erro ao processar a imagem da capa do livro.');
             }
 
             // Exclui a imagem antiga se existir
@@ -92,7 +93,7 @@ class Book extends BaseModels
      * @param array $request
      *
      * @return void
-     * @throws \Exception
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     private function googleBooksAPIHandler(array $request): void
     {
@@ -114,7 +115,7 @@ class Book extends BaseModels
      * @param string $cep
      *
      * @return void
-     * @throws \Exception
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     private function viaCepAPIHandler(string $cep): void
     {
@@ -126,5 +127,29 @@ class Book extends BaseModels
         $this->bairro = $response['bairro'];
         $this->cidade = $response['localidade'];
         $this->estado = $response['uf'];
+    }
+
+    /**
+     * Cria um livro a partir do código ISBN com os dados do GoogleBooks
+     *
+     * @param string $isbn
+     *
+     * @return Book
+     */
+    public static function createFromGoogleBooks(string $isbn): Book
+    {
+        $googleBooksAPI = new GoogleBooksAPI(['isbn' => $isbn]);
+        $googleBooksAPI->setStripDoubleQuotes(true);
+        $response = $googleBooksAPI->getBook();
+
+        $self                  = new self();
+        $self->isbn            = $response['industryIdentifiers'][0]['identifier'];
+        $self->titulo          = $response['title'];
+        $self->autor           = $response['authors'][0];
+        $self->data_publicacao = $response['publishedDate'];
+        $self->descricao       = $response['description'];
+        $self->save();
+
+        return $self;
     }
 }

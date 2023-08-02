@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BooksController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+/**
+ * Rota para buscar um livro pelo código ISBN, ou se não existir, criar um com base no GoogleBooks
+ */
+Route::get('books/{isbn}', function (Request $request, string $isbn) {
+    return (new BooksController($request))->apiGet($isbn);
 });

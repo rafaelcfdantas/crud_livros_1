@@ -3,6 +3,7 @@
 namespace App\Helpers\Api;
 
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpFoundation\Response;
 
 class ViaCepAPI
 {
@@ -19,7 +20,7 @@ class ViaCepAPI
      * Faz a requisição para o ViaCEP para achar o cep
      *
      * @return array
-     * @throws \Exception
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     public function getCep(): array
     {
@@ -27,7 +28,7 @@ class ViaCepAPI
         $json     = $response->json();
 
         if (!empty($json['erro'])) {
-            throw new \Exception('Erro ao fazer a requisição para a API do ViaCEP. Verifique se o CEP digitado existe e tente novamente.');
+            abort(Response::HTTP_BAD_REQUEST, 'Erro ao fazer a requisição para a API do ViaCEP. Verifique se o CEP digitado existe e tente novamente.');
         }
 
         return $json;

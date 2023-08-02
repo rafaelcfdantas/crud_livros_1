@@ -28,8 +28,9 @@
 
 ## Sobre o Projeto
 
-Este projeto é a resolução de um teste de conhecimento para desenvolvedor PHP júnior. O desafio é
-criar um CRUD de livros utilizando Laravel e algumas API's para complementar informações.
+O desafio deste projeto é criar um CRUD de livros utilizando Laravel e as API's do GoogleBooks/ViaCEP/Amazon S3
+para complementar informações. Além disso, criar um endpoint de API para consultar um livro específico
+com base no código ISBN, ou criar um livro novo caso não exista.
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
 
@@ -66,7 +67,7 @@ Utilize o Prompt de Comando para o Windows e o Terminal padrão para o Linux.
    ```
 2. Caso seu sistema operacional seja Linux, abra o arquivo .env e altere o valor 
 da diretiva COMPOSE_PATH_SEPARATOR para ``:``
-3. Inicialize o Docker e entre no container do Mysql
+3. Inicialize o Docker e entre no container do MySQL
    ```sh
    docker-compose up -d apache2 mysql
    docker-compose exec mysql bash
@@ -85,6 +86,7 @@ com o comando ``exit``
    composer install
    php artisan migrate
    ```
+O projeto estará pronto com a URL `http://localhost/`
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
 
